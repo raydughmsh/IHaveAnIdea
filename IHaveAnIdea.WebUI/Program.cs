@@ -1,3 +1,5 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using IHaveAnIdea.Business.Abstract;
 using IHaveAnIdea.Business.Concrete;
 using IHaveAnIdea.Business.Mapping;
@@ -49,6 +51,10 @@ builder.Services.AddScoped<ICategoryService, CategoryManager>();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+
+// FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<IHaveAnIdea.Business.ValidationRules.RegisterValidator>();
 
 builder.Services.AddControllersWithViews();
 
