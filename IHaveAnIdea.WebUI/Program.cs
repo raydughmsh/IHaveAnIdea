@@ -1,3 +1,8 @@
+using IHaveAnIdea.Business.Abstract;
+using IHaveAnIdea.Business.Concrete;
+using IHaveAnIdea.Business.Mapping;
+using IHaveAnIdea.DataAccess.Abstract;
+using IHaveAnIdea.DataAccess.Concrete.EntityFramework;
 using IHaveAnIdea.DataAccess.Context;
 using IHaveAnIdea.Entity.Concrete;
 using Microsoft.AspNetCore.Identity;
@@ -29,6 +34,21 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.ExpireTimeSpan = TimeSpan.FromHours(8);
 });
+
+// Repositories
+builder.Services.AddScoped<IPostRepository, EfPostRepository>();
+builder.Services.AddScoped<ICommentRepository, EfCommentRepository>();
+builder.Services.AddScoped<ILikeRepository, EfLikeRepository>();
+builder.Services.AddScoped<ICategoryRepository, EfCategoryRepository>();
+
+// Services
+builder.Services.AddScoped<IPostService, PostManager>();
+builder.Services.AddScoped<ICommentService, CommentManager>();
+builder.Services.AddScoped<ILikeService, LikeManager>();
+builder.Services.AddScoped<ICategoryService, CategoryManager>();
+
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddControllersWithViews();
 
