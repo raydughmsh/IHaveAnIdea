@@ -1,0 +1,110 @@
+@model IHaveAnIdea.Business.DTOs.PostDto
+@using IHaveAnIdea.Business.DTOs
+@{
+    ViewData["Title"] = Model.Title;
+    var commentDto = ViewBag.CommentDto as CommentCreateDto;
+}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Ana Sayfa</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" asp-route-categoryId="@Model.CategoryId">@Model.CategoryName</a></li>
+        <li class="breadcrumb-item active">@Model.Title</li>
+    </ol>
+</nav>
+
+<!-- Post Card -->
+<div class="card shadow mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="badge bg-primary fs-6">@Model.CategoryName</span>
+        <small class="text-muted">@Model.CreatedAt.ToString("dd MMMM yyyy, HH:mm")</small>
+    </div>
+    <div class="card-body">
+        <h2 class="card-title">@Model.Title</h2>
+        <hr />
+        <p class="card-text fs-5" style="white-space: pre-line;">@Model.Content</p>
+    </div>
+    <div class="card-footer d-flex justify-content-between align-items-center">
+        <div>
+            <i class="bi bi-person-circle text-primary"></i>
+            <strong>@Model.AuthorName</strong>
+            @if (Model.UpdatedAt.HasValue)
+            {
+                <small class="text-muted ms-2">(düzenlendi: @Model.UpdatedAt.Value.ToString("dd MMM yyyy"))</small>
+            }
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <!-- Like Button -->
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <form asp-controller="Like" asp-action="Toggle" method="post" class="d-inline">
+                    <input type="hidden" name="postId" value="@Model.Id" />
+                    <input type="hidden" name="returnUrl" value="/Post/Detail/@Model.Id" />
+                    <button type="submit" class="btn btn-sm @(Model.IsLikedByCurrentUser ? "btn-danger" : "btn-outline-danger")">
+                        <i class="bi bi-heart@(Model.IsLikedByCurrentUser ? "-fill" : "")"></i>
+                        @Model.LikeCount Beğeni
+                    </button>
+                </form>
+            }
+            else
+            {
+                <span class="text-muted small">
+                    <i class="bi bi-heart"></i> @Model.LikeCount Beğeni
+                </span>
+            }
+
+            <!-- Edit / Delete (owner only) -->
+            @if (User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.AppUserId)
+            {
+                <a asp-controller="Post" asp-action="Edit" asp-route-id="@Model.Id"
+                   class="btn btn-sm btn-outline-warning">
+                    <i class="bi bi-pencil"></i> Düzenle
+                </a>
+                <form asp-controller="Post" asp-action="Delete" method="post" class="d-inline"
+                      onsubmit="return confirm('Bu gönderiyi silmek istediğinizden emin misiniz?')">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                        <i class="bi bi-trash"></i> Sil
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Comments Section -->
+<div class="card shadow">
+    <div class="card-header fw-bold">
+        <i class="bi bi-chat-dots"></i> Yorumlar (@Model.CommentCount)
+    </div>
+    <div class="card-body">
+        @if (Model.CommentCount == 0)
+        {
+            <p class="text-muted text-center py-3">Henüz yorum yapılmamış. İlk yorumu sen yap!</p>
+        }
+
+        <!-- Add Comment -->
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <form asp-controller="Comment" asp-action="Add" method="post" class="mb-4">
+                <input type="hidden" name="PostId" value="@Model.Id" />
+                <div class="mb-2">
+                    <textarea name="Content" class="form-control" rows="3"
+                              placeholder="Yorumunuzu yazın..."></textarea>
+                    <span asp-validation-for="@commentDto!.Content" class="text-danger small"></span>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-send"></i> Yorum Yap
+                </button>
+            </form>
+            <hr />
+        }
+        else
+        {
+            <div class="alert alert-light text-center">
+                <a asp-controller="Account" asp-action="Login">Giriş yapın</a> ve yorum yapın.
+            </div>
+        }
+    </div>
+</div>
